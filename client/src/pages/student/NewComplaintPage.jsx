@@ -34,6 +34,28 @@ export default function NewComplaintPage() {
   });
   const [filePreviews, setFilePreviews] = useState([]);
   const [dragOver, setDragOver] = useState(false);
+  const [aiMessageIndex, setAiMessageIndex] = useState(0);
+
+  const AI_STEPS = [
+    "AI Agent scanning text...",
+    "Analyzing sentiment...",
+    "Checking for duplicate tickets...",
+    "Determining priority level...",
+    "Routing to appropriate department...",
+    "Finalizing report..."
+  ];
+
+  useEffect(() => {
+    let interval;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setAiMessageIndex((prev) => (prev < AI_STEPS.length - 1 ? prev + 1 : prev));
+      }, 500);
+    } else {
+      setAiMessageIndex(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const updateForm = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
   const updateLocation = (key, value) => setForm((prev) => ({ ...prev, location: { ...prev.location, [key]: value } }));
@@ -448,14 +470,33 @@ export default function NewComplaintPage() {
               Continue →
             </button>
           ) : (
-            <button
-              className="btn btn-primary btn-lg"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              id="submit-complaint-btn"
-            >
-              {isLoading ? <><div className="spinner spinner-sm" /> Submitting...</> : '🚀 Submit Complaint'}
-            </button>
+              <button
+                className="btn btn-primary btn-lg"
+                onClick={handleSubmit}
+                disabled={isLoading}
+                id="submit-complaint-btn"
+                style={{ position: 'relative', overflow: 'hidden', minWidth: 200 }}
+              >
+                {isLoading ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
+                    <div className="spinner spinner-sm" />
+                    <span style={{ fontSize: 13, fontFamily: 'monospace' }}>{AI_STEPS[aiMessageIndex]}</span>
+                  </div>
+                ) : '🚀 Submit Complaint'}
+                
+                {isLoading && (
+                  <motion.div
+                    initial={{ left: '-100%' }}
+                    animate={{ left: '100%' }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                    style={{
+                      position: 'absolute', top: 0, bottom: 0, width: '50%',
+                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                      zIndex: 0
+                    }}
+                  />
+                )}
+              </button>
           )}
         </div>
       </div>
