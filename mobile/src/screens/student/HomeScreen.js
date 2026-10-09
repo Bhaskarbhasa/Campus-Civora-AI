@@ -60,17 +60,22 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 
-  const renderComplaintItem = ({ item }) => (
-    <View style={styles.complaintCard}>
-      <View style={styles.complaintHeader}>
-        <Text style={styles.complaintTitle} numberOfLines={1}>{item.title}</Text>
-        <View style={[styles.badge, { backgroundColor: STATUS_COLORS[item.status] || '#6B7280' }]}>
-          <Text style={styles.badgeText}>{item.status?.replace(/_/g, ' ').toUpperCase()}</Text>
+  const renderComplaintItem = ({ item }) => {
+    if (!item) return null;
+    const statusText = (item.status || 'submitted').toString().replace(/_/g, ' ').toUpperCase();
+    const categoryText = (item.category || 'general').toString().replace(/_/g, ' ');
+    return (
+      <View style={styles.complaintCard}>
+        <View style={styles.complaintHeader}>
+          <Text style={styles.complaintTitle} numberOfLines={1}>{item.title || 'Untitled'}</Text>
+          <View style={[styles.badge, { backgroundColor: STATUS_COLORS[item.status] || '#6B7280' }]}>
+            <Text style={styles.badgeText}>{statusText}</Text>
+          </View>
         </View>
+        <Text style={styles.complaintCategory}>{categoryText}</Text>
       </View>
-      <Text style={styles.complaintCategory}>{item.category?.replace(/_/g, ' ')}</Text>
-    </View>
-  );
+    );
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -81,8 +86,8 @@ export default function HomeScreen({ navigation }) {
 
       <View style={styles.statsGrid}>
         {renderStatCard('Total Complaints', complaints.length, '#FFFFFF')}
-        {renderStatCard('Pending', complaints.filter(c => !['completed', 'closed', 'rejected'].includes(c.status)).length, '#F59E0B')}
-        {renderStatCard('Resolved', complaints.filter(c => ['completed', 'closed'].includes(c.status)).length, '#10B981')}
+        {renderStatCard('Pending', (complaints || []).filter(c => c && !['completed', 'closed', 'rejected'].includes(c.status)).length, '#F59E0B')}
+        {renderStatCard('Resolved', (complaints || []).filter(c => c && ['completed', 'closed'].includes(c.status)).length, '#10B981')}
         {renderStatCard('Notifications', '0', '#6C63FF')}
       </View>
 

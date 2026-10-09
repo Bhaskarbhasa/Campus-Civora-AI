@@ -1,13 +1,56 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ActivityIndicator, View, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 import { AuthProvider, useAuth } from './src/store/authStore';
+
+const customDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: '#0F0F1A',
+    card: '#1A1A2E',
+    primary: '#6C63FF',
+    text: '#FFFFFF',
+    border: '#2A2A3E',
+    notification: '#F43F5E',
+  },
+};
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('App Caught Error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Application Error</Text>
+          <Text style={styles.errorText}>{String(this.state.error?.message || this.state.error)}</Text>
+          <TouchableOpacity 
+            style={styles.errorButton}
+            onPress={() => this.setState({ hasError: false, error: null })}
+          >
+            <Text style={styles.errorButtonText}>Reload Screen</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Screens
 import LoginScreen from './src/screens/auth/LoginScreen';
@@ -109,11 +152,13 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <AuthProvider>
-          <NavigationContainer theme={{ colors: { background: '#0F0F1A' } }}>
-            <AppNavigator />
-          </NavigationContainer>
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <NavigationContainer theme={customDarkTheme}>
+              <AppNavigator />
+            </NavigationContainer>
+          </AuthProvider>
+        </ErrorBoundary>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
@@ -125,6 +170,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#0F0F1A',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0F0F1A',
+    padding: 24,
+  },
+  errorTitle: {
+    color: '#F43F5E',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  errorText: {
+    color: '#8B8BA7',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  errorButton: {
+    backgroundColor: '#6C63FF',
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 8,
+  },
+  errorButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   tabBar: {
     backgroundColor: '#1A1A2E',

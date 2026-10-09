@@ -6,8 +6,10 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
 
   const getInitials = (name) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    if (!name || typeof name !== 'string') return 'U';
+    const parts = name.trim().split(/\s+/);
+    if (!parts.length || !parts[0]) return 'U';
+    return parts.map(n => n ? n[0] : '').filter(Boolean).join('').toUpperCase().substring(0, 2) || 'U';
   };
 
   return (

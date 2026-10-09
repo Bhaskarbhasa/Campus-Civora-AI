@@ -62,7 +62,8 @@ export default function ComplaintsScreen() {
     fetchComplaints();
   }, []);
 
-  const filteredComplaints = complaints.filter(c => {
+  const filteredComplaints = (complaints || []).filter(c => {
+    if (!c) return false;
     if (filter === 'All') return true;
     if (filter === 'Active') return !['completed', 'closed', 'rejected'].includes(c.status);
     if (filter === 'Completed') return ['completed', 'closed'].includes(c.status);
@@ -74,24 +75,28 @@ export default function ComplaintsScreen() {
     setModalVisible(true);
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => openModal(item)}>
-      <View style={styles.cardHeader}>
-        <View style={styles.titleRow}>
-          <Text style={styles.categoryIcon}>{CATEGORY_ICONS[item.category] || '📄'}</Text>
-          <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
+  const renderItem = ({ item }) => {
+    if (!item) return null;
+    const statusText = (item.status || 'submitted').toString().replace(/_/g, ' ').toUpperCase();
+    return (
+      <TouchableOpacity style={styles.card} onPress={() => openModal(item)}>
+        <View style={styles.cardHeader}>
+          <View style={styles.titleRow}>
+            <Text style={styles.categoryIcon}>{CATEGORY_ICONS[item.category] || '📄'}</Text>
+            <Text style={styles.title} numberOfLines={1}>{item.title || 'Complaint'}</Text>
+          </View>
+          <View style={[styles.badge, { backgroundColor: STATUS_COLORS[item.status] || '#6B7280' }]}>
+            <Text style={styles.badgeText}>{statusText}</Text>
+          </View>
         </View>
-        <View style={[styles.badge, { backgroundColor: STATUS_COLORS[item.status] || '#6B7280' }]}>
-          <Text style={styles.badgeText}>{item.status?.replace(/_/g, ' ').toUpperCase()}</Text>
+        
+        <View style={styles.cardFooter}>
+          <Text style={styles.date}>{new Date(item.createdAt || Date.now()).toLocaleDateString()}</Text>
+          <Text style={styles.priority}>Priority: <Text style={styles.priorityValue}>{item.priority || 'medium'}</Text></Text>
         </View>
-      </View>
-      
-      <View style={styles.cardFooter}>
-        <Text style={styles.date}>{new Date(item.createdAt || Date.now()).toLocaleDateString()}</Text>
-        <Text style={styles.priority}>Priority: <Text style={styles.priorityValue}>{item.priority}</Text></Text>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
