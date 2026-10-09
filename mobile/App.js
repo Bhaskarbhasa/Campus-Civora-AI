@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,15 +9,15 @@ import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'rea
 
 import { AuthProvider, useAuth } from './src/store/authStore';
 
-const customDarkTheme = {
-  ...DarkTheme,
+const customLightTheme = {
+  ...DefaultTheme,
   colors: {
-    ...DarkTheme.colors,
-    background: '#0F0F1A',
-    card: '#1A1A2E',
-    primary: '#6C63FF',
-    text: '#FFFFFF',
-    border: '#2A2A3E',
+    ...DefaultTheme.colors,
+    background: '#F8FAFC',
+    card: '#FFFFFF',
+    primary: '#2563EB',
+    text: '#0F172A',
+    border: '#E2E8F0',
     notification: '#F43F5E',
   },
 };
@@ -57,16 +57,17 @@ import LoginScreen from './src/screens/auth/LoginScreen';
 import HomeScreen from './src/screens/student/HomeScreen';
 import ComplaintsScreen from './src/screens/student/ComplaintsScreen';
 import NewComplaintScreen from './src/screens/student/NewComplaintScreen';
+import GovernanceScreen from './src/screens/shared/GovernanceScreen';
 import LostFoundScreen from './src/screens/shared/LostFoundScreen';
 import ProfileScreen from './src/screens/shared/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const TabIcon = ({ name, color, focused, isMain = false }) => {
+const TabIcon = ({ name, focused }) => {
   return (
-    <View style={[styles.iconContainer, isMain && styles.mainIconContainer]}>
-      <Text style={[styles.iconText, { color: isMain ? '#FFF' : color }, isMain && styles.mainIconText]}>
+    <View style={styles.iconContainer}>
+      <Text style={[styles.iconText, focused && styles.focusedIconText]}>
         {name}
       </Text>
     </View>
@@ -79,8 +80,8 @@ function MainTabs() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: '#6C63FF',
-        tabBarInactiveTintColor: '#8B8BA7',
+        tabBarActiveTintColor: '#2563EB',
+        tabBarInactiveTintColor: '#64748B',
         tabBarShowLabel: true,
         tabBarLabelStyle: styles.tabBarLabel,
       }}
@@ -89,22 +90,24 @@ function MainTabs() {
         name="Home" 
         component={HomeScreen} 
         options={{
-          tabBarIcon: ({ color, focused }) => <TabIcon name="🏠" color={color} focused={focused} />
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ focused }) => <TabIcon name="🏠" focused={focused} />
         }}
       />
       <Tab.Screen 
         name="Complaints" 
         component={ComplaintsScreen} 
         options={{
-          tabBarIcon: ({ color, focused }) => <TabIcon name="📄" color={color} focused={focused} />
+          tabBarLabel: 'Tickets',
+          tabBarIcon: ({ focused }) => <TabIcon name="📋" focused={focused} />
         }}
       />
       <Tab.Screen 
-        name="NewComplaint" 
-        component={NewComplaintScreen} 
+        name="Governance" 
+        component={GovernanceScreen} 
         options={{
-          tabBarLabel: 'New',
-          tabBarIcon: ({ color, focused }) => <TabIcon name="➕" color={color} focused={focused} isMain />
+          tabBarLabel: 'Governance',
+          tabBarIcon: ({ focused }) => <TabIcon name="🗳️" focused={focused} />
         }}
       />
       <Tab.Screen 
@@ -112,14 +115,15 @@ function MainTabs() {
         component={LostFoundScreen} 
         options={{
           tabBarLabel: 'Lost & Found',
-          tabBarIcon: ({ color, focused }) => <TabIcon name="🔍" color={color} focused={focused} />
+          tabBarIcon: ({ focused }) => <TabIcon name="🔍" focused={focused} />
         }}
       />
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen} 
         options={{
-          tabBarIcon: ({ color, focused }) => <TabIcon name="👤" color={color} focused={focused} />
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ focused }) => <TabIcon name="👤" focused={focused} />
         }}
       />
     </Tab.Navigator>
@@ -132,15 +136,18 @@ function AppNavigator() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C63FF" />
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F0F1A' } }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F8FAFC' } }}>
       {user ? (
-        <Stack.Screen name="MainTabs" component={MainTabs} />
+        <>
+          <Stack.Screen name="MainTabs" component={MainTabs} />
+          <Stack.Screen name="NewComplaint" component={NewComplaintScreen} />
+        </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
       )}
@@ -154,7 +161,7 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ErrorBoundary>
           <AuthProvider>
-            <NavigationContainer theme={customDarkTheme}>
+            <NavigationContainer theme={customLightTheme}>
               <AppNavigator />
             </NavigationContainer>
           </AuthProvider>
@@ -169,13 +176,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F0F1A',
+    backgroundColor: '#F8FAFC',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F0F1A',
+    backgroundColor: '#F8FAFC',
     padding: 24,
   },
   errorTitle: {
@@ -185,13 +192,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   errorText: {
-    color: '#8B8BA7',
+    color: '#64748B',
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 24,
   },
   errorButton: {
-    backgroundColor: '#6C63FF',
+    backgroundColor: '#2563EB',
     paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 8,
@@ -202,37 +209,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   tabBar: {
-    backgroundColor: '#1A1A2E',
-    borderTopWidth: 0,
-    elevation: 0,
-    height: 60,
-    paddingBottom: 5,
-    paddingTop: 5,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    elevation: 8,
+    height: 62,
+    paddingBottom: 6,
+    paddingTop: 6,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
   },
   tabBarLabel: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '600',
   },
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mainIconContainer: {
-    backgroundColor: '#6C63FF',
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginTop: -20,
-    elevation: 4,
-    shadowColor: '#6C63FF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
   iconText: {
     fontSize: 20,
+    opacity: 0.8,
   },
-  mainIconText: {
-    fontSize: 24,
-  }
+  focusedIconText: {
+    fontSize: 22,
+    opacity: 1,
+  },
 });
